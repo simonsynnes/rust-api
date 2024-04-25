@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -53,4 +53,18 @@ async fn delete_user(user_id: web::Path<u32>) -> impl Responder {
         message: format!("Deleted user with ID: {}", user_id),
     })
 }
-fn main() {}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new()
+            .route("/users", web::get().to(get_users))
+            .route("/users/{id}", web::get().to(get_user))
+            .route("/users", web::post().to(add_user))
+            .route("/users/{id}", web::put().to(update_user))
+            .route("/users/{id}", web::delete().to(delete_user))
+    })
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await
+}
